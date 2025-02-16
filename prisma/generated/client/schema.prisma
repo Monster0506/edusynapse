@@ -1,0 +1,627 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  emailVerified        DateTime?
+  image                String?
+  bio                  String?
+  avatarUrl            String?
+  accounts             Account[]
+  sessions             Session[]
+  activities           Activity[]
+  learningPreferences  LearningPreferences?
+  password             String
+  name                 String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  topics               Topic[]
+  progress             Progress[]
+  badges               Badge[]
+  upcomingReviews      UpcomingReview[]
+  learningPaths        LearningPath[]
+  bookmarks            Bookmark[]
+  quizAttempts         QuizAttempt[]
+  knowledgeNodes       KnowledgeNode[]
+  xp                   Int                   @default(0)
+  level                Int                   @default(1)
+  streak               Int                   @default(0)
+  lastStreakUpdate     DateTime?
+  lastLoginDate        DateTime              @default(now())
+  leaderboardEntries   LeaderboardEntry[]
+  reviewSessions       ReviewSession[]
+  workspaces           WorkspaceMember[]
+  chatMessages         ChatMessage[]
+  ownedWorkspaces      Workspace[]           @relation("OwnedWorkspaces")
+  settings             UserSettings?
+  analyticsEntries     AnalyticsEntry[]
+  isAdmin              Boolean               @default(false)
+  notifications        Notification[]
+  role                 String?
+  interests            String[]
+  learningStyle        Json?
+  passwordlessTokens   PasswordlessToken[]
+  dailyChallenges      DailyChallenge[]
+  externalGoals        ExternalGoal[]
+  comments             Comment[]
+  contentRatings       ContentRating[]
+  cramMode             Boolean               @default(false)
+  challengeScores      ChallengeScore[]
+  pollVotes            PollVote[]
+  aiRecommendations    AIRecommendation[]
+  aiModules            AIModule[]
+  aiModuleQuizAttempts AIModuleQuizAttempt[]
+  aiModuleRatings      AIModuleRating[]
+  UserProgress         UserProgress[]
+  AIChat               AIChat[]
+  PracticeAttempts     PracticeAttempt[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  oauth_token_secret String?
+  oauth_token        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LearningPreferences {
+  id                  String @id @default(cuid())
+  userId              String @unique
+  visualLearning      Int
+  auditoryLearning    Int
+  kinestheticLearning Int
+  user                User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Topic {
+  id                   String                @id @default(cuid())
+  title                String
+  description          String?
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id])
+  progress             Progress[]
+  learningPathItems    LearningPathItem[]
+  contentItems         ContentItem[]
+  analyticsEntries     AnalyticsEntry[]
+  comments             Comment[]
+  prerequisites        Prerequisite[]
+  aiModules            AIModule[]
+  aiModuleQuizAttempts AIModuleQuizAttempt[]
+  aiModuleRatings      AIModuleRating[]
+}
+
+model Progress {
+  id        String @id @default(cuid())
+  userId    String
+  topicId   String
+  completed Float
+  user      User   @relation(fields: [userId], references: [id])
+  topic     Topic  @relation(fields: [topicId], references: [id])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  earnedAt    DateTime @default(now())
+}
+
+model UpcomingReview {
+  id      String   @id @default(cuid())
+  userId  String
+  topicId String
+  dueDate DateTime
+  user    User     @relation(fields: [userId], references: [id])
+}
+
+model LearningPath {
+  id            String                     @id @default(cuid())
+  title         String
+  description   String?
+  userId        String
+  user          User                       @relation(fields: [userId], references: [id])
+  items         LearningPathItem[]
+  content       Json
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  shareId       String?                    @unique
+  sharedAt      DateTime?
+  prerequisites Prerequisite[]
+  aiModuleItems AIModuleLearningPathItem[]
+  UserProgress  UserProgress[]
+}
+
+model LearningPathItem {
+  id             String         @id @default(cuid())
+  order          Int
+  learningPathId String
+  topicId        String
+  learningPath   LearningPath   @relation(fields: [learningPathId], references: [id])
+  topic          Topic          @relation(fields: [topicId], references: [id])
+  confidence     Int            @default(0)
+  UserProgress   UserProgress[]
+}
+
+model ContentItem {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  content         String
+  type            String
+  difficulty      String
+  topicId         String
+  topic           Topic            @relation(fields: [topicId], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  bookmarks       Bookmark[]
+  quizAttempts    QuizAttempt[]
+  reviewItems     ReviewItem[]
+  version         String           @default("1.0.0")
+  ratings         ContentRating[]
+  aiPlaylistItems AIPlaylistItem[]
+}
+
+model ContentRating {
+  id            String      @id @default(cuid())
+  userId        String
+  contentItemId String
+  rating        Int
+  createdAt     DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+
+  @@unique([userId, contentItemId])
+}
+
+model Bookmark {
+  id            String      @id @default(cuid())
+  userId        String
+  contentItemId String
+  user          User        @relation(fields: [userId], references: [id])
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+  createdAt     DateTime    @default(now())
+}
+
+model QuizAttempt {
+  id            String      @id @default(cuid())
+  userId        String
+  contentItemId String
+  score         Float
+  startedAt     DateTime    @default(now())
+  completedAt   DateTime?
+  answers       Json?
+  user          User        @relation(fields: [userId], references: [id])
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+}
+
+model KnowledgeNode {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  parentId    String?
+  parent      KnowledgeNode?  @relation("NodeHierarchy", fields: [parentId], references: [id])
+  children    KnowledgeNode[] @relation("NodeHierarchy")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int
+  type      String
+  startDate DateTime
+  endDate   DateTime
+}
+
+model ReviewSession {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  dueDate   DateTime
+  completed Boolean      @default(false)
+  items     ReviewItem[]
+  isUrgent  Boolean      @default(false)
+}
+
+model ReviewItem {
+  id              String        @id @default(cuid())
+  reviewSessionId String
+  reviewSession   ReviewSession @relation(fields: [reviewSessionId], references: [id])
+  contentItemId   String
+  contentItem     ContentItem   @relation(fields: [contentItemId], references: [id])
+  type            String
+  question        String
+  answer          String
+  userAnswer      String?
+  isCorrect       Boolean?
+  answeredAt      DateTime?
+}
+
+model Workspace {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  ownerId          String
+  owner            User              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
+  members          WorkspaceMember[]
+  whiteboards      Whiteboard[]
+  chats            Chat[]
+  breakoutRooms    BreakoutRoom[]
+  livePolls        LivePoll[]
+  sessionSummaries SessionSummary[]
+}
+
+model WorkspaceMember {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id])
+  workspaceId   String
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  role          String
+  joinedAt      DateTime       @default(now())
+  breakoutRooms BreakoutRoom[]
+}
+
+model Whiteboard {
+  id          String              @id @default(cuid())
+  workspaceId String
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id])
+  content     Json
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  versions    WhiteboardVersion[]
+}
+
+model WhiteboardVersion {
+  id            String     @id @default(cuid())
+  whiteboardId  String
+  whiteboard    Whiteboard @relation(fields: [whiteboardId], references: [id])
+  content       Json
+  createdAt     DateTime   @default(now())
+  createdBy     String
+  versionNumber Int
+}
+
+model BreakoutRoom {
+  id           String            @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace         @relation(fields: [workspaceId], references: [id])
+  name         String
+  createdAt    DateTime          @default(now())
+  endedAt      DateTime?
+  participants WorkspaceMember[]
+}
+
+model LivePoll {
+  id          String     @id @default(cuid())
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  question    String
+  options     Json
+  createdAt   DateTime   @default(now())
+  endedAt     DateTime?
+  votes       PollVote[]
+}
+
+model PollVote {
+  id         String   @id @default(cuid())
+  livePoolId String
+  livePoll   LivePoll @relation(fields: [livePoolId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  option     String
+  createdAt  DateTime @default(now())
+}
+
+model SessionSummary {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  content     String
+  createdAt   DateTime  @default(now())
+  createdBy   String
+}
+
+model Chat {
+  id          String        @id @default(cuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  messages    ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model UserSettings {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id])
+  notificationPreferences Json
+  voiceSettings           Json
+  privacySettings         Json
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model AnalyticsEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  timeSpent Int
+  score     Float?
+  date      DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model PasswordlessToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+}
+
+model DailyChallenge {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  reward      String
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ExternalGoal {
+  id        String   @id @default(cuid())
+  userId    String
+  platform  String
+  title     String
+  progress  Float
+  dueDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Prerequisite {
+  id             String       @id @default(cuid())
+  learningPathId String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id])
+  topicId        String
+  topic          Topic        @relation(fields: [topicId], references: [id])
+  completed      Boolean      @default(false)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model AIPlaylist {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  items       AIPlaylistItem[]
+}
+
+model AIPlaylistItem {
+  id            String      @id @default(cuid())
+  playlistId    String
+  contentItemId String
+  order         Int
+  playlist      AIPlaylist  @relation(fields: [playlistId], references: [id])
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+}
+
+model ChallengeScore {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int
+  createdAt DateTime @default(now())
+}
+
+model AIRecommendation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+// New model for AI-generated modules
+model AIModule {
+  id                String                     @id @default(cuid())
+  title             String
+  description       String?
+  content           Json
+  tags              String[]
+  difficulty        String?
+  status            String                     @default("draft")
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  userId            String?
+  user              User?                      @relation(fields: [userId], references: [id])
+  topicId           String?
+  topic             Topic?                     @relation(fields: [topicId], references: [id])
+  learningPathItems AIModuleLearningPathItem[]
+  quizAttempts      AIModuleQuizAttempt[]
+  ratings           AIModuleRating[]
+  PracticeAttempts  PracticeAttempt[]
+}
+
+// New model for AI module learning path items
+model AIModuleLearningPathItem {
+  id             String       @id @default(cuid())
+  order          Int
+  learningPathId String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id])
+  aiModuleId     String
+  aiModule       AIModule     @relation(fields: [aiModuleId], references: [id])
+  confidence     Int          @default(0)
+}
+
+// New model for AI module quiz attempts
+model AIModuleQuizAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  aiModuleId  String
+  topicId     String
+  score       Float
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  answers     Json
+  user        User      @relation(fields: [userId], references: [id])
+  aiModule    AIModule  @relation(fields: [aiModuleId], references: [id])
+  topic       Topic     @relation(fields: [topicId], references: [id])
+}
+
+// New model for AI module ratings
+model AIModuleRating {
+  id         String   @id @default(cuid())
+  userId     String
+  aiModuleId String
+  topicId    String
+  rating     Int
+  feedback   String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  aiModule   AIModule @relation(fields: [aiModuleId], references: [id])
+  topic      Topic    @relation(fields: [topicId], references: [id])
+
+  @@unique([userId, aiModuleId])
+}
+
+model UserProgress {
+  id             String   @id @default(cuid())
+  userId         String
+  learningPathId String
+  moduleId       String
+  status         String   @default("NOT_STARTED") // "IN_PROGRESS", "COMPLETED"
+  updatedAt      DateTime @updatedAt
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningPath LearningPath     @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  module       LearningPathItem @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId]) // Ensure progress is unique per user per module
+}
+
+model AIChat {
+  id        String          @id @default(cuid())
+  title     String?
+  createdAt DateTime        @default(now())
+  messages  AIChatMessage[]
+  userId    String
+  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AIChatMessage {
+  id        String   @id @default(cuid())
+  chatId    String
+  chat      AIChat   @relation(fields: [chatId], references: [id])
+  display   String?
+  role      String // "user" or "assistant"
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model PracticeAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  aiModuleId  String
+  aiModule    AIModule  @relation(fields: [aiModuleId], references: [id])
+  questions   Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  score       Float?
+  averageEase Float?    @default(2.5)
+  completedAt DateTime?
+}
