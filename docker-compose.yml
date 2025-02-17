@@ -1,0 +1,37 @@
+version: "3.8"
+services:
+  database:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: edusynapse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama
+    restart: always
+    environment:
+      - OLLAMA_MODELS=/models
+    volumes:
+      - "E:/models:/models"
+    ports:
+      - "11434:11434"
+
+  edusynapse:
+    build: .
+    restart: always
+    depends_on:
+      - database
+      - ollama
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@database:5432/edusynapse"
+
+volumes:
+  postgres_data:
