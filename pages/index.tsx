@@ -11,6 +11,7 @@ import { GitBranch, Code2, Network, Repeat, Bot, UserCog, FileText, Brain, Calcu
 import HomePageToolbar from "@/components/HomePageToolbar"
 import { FeatureModal } from "@/components/FeatureModal"
 import { WaitlistModal } from "@/components/WaitlistModal"
+
 export default function Home() {
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
@@ -64,9 +65,11 @@ export default function Home() {
               <Button size="lg" className="h-12 px-8" onClick={() => setIsWaitlistOpen(true)}>
                 Join Waitlist
               </Button>
+              <a href="https://youtu.be/9DW2QBCzRc0">
               <Button size="lg" variant="outline" className="h-12 px-8">
                 View Demo
               </Button>
+              </a>
             </motion.div>
           </motion.div>
         </section>
@@ -180,42 +183,42 @@ const features: Feature[] = [
     description:
       "AI-generated learning journeys tailored to your style, dynamically adjusting modules and difficulty based on your progress and performance, ensuring you stay both challenged and motivated.",
     icon: GitBranch,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/LearningPaths.jpeg?height=300&width=400",
   },
   {
     name: "Code Execution",
     description:
       "Run Python/JS directly in your browser with our secure sandbox environment—experiment with code on the fly and see outputs instantly.",
     icon: Code2,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/Executable.jpeg?height=300&width=400",
   },
   {
     name: "Knowledge Graph",
     description:
       "Visualize concept relationships through an interactive graph that helps you grasp complex topics by revealing how ideas connect and overlap.",
     icon: Network,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/KnowledgeGraph.jpeg?height=300&width=400",
   },
   {
     name: "Smart Reviews",
     description:
       "Optimized scheduling powered by our Spaced Repetition System to help you retain information longer with customized review intervals.",
     icon: Repeat,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/Practice.jpeg?height=300&width=400",
   },
   {
     name: "AI Tutor",
     description:
       "Access 24/7 assistance from STEVE, your personal AI tutor ready to offer on-demand explanations, clarifications, and examples.",
     icon: Bot,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/Chat.jpeg?height=300&width=400",
   },
   {
     name: "Personalization",
     description:
       "Get content curated to your interests and learning style, ensuring maximum engagement and efficient knowledge acquisition across various subjects.",
     icon: UserCog,
-    imageSrc: "/placeholder.svg?height=300&width=400",
+    imageSrc: "/pictures/Profile.jpeg?height=300&width=400",
   },
 ]
 
