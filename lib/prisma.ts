@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.
@@ -18,3 +19,23 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export default prisma;
+
+export const authMiddleware = async (request: NextRequest) => {
+  const token = request.headers.get("Authorization")
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { token },
+      include: { role: true }
+    })
+    
+  } catch (error) {
+    console.error("Error fetching user:", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
+}
+

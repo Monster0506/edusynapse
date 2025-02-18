@@ -1,38 +1,40 @@
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [EduSynapse](#edusynapse)
-   * [Inspiration](#inspiration)
-   * [What it does](#what-it-does)
-   * [How we built it](#how-we-built-it)
-   * [Challenges we ran into](#challenges-we-ran-into)
-   * [Accomplishments that we're proud of](#accomplishments-that-were-proud-of)
-   * [What we learned](#what-we-learned)
-   * [What's next for EduSynapse](#whats-next-for-edusynapse)
-   * [Getting Started Experience](#getting-started-experience)
-   * [Main Workflow](#main-workflow)
-   * [Interactive Code Execution](#interactive-code-execution)
-   * [Meet STEVE - Your AI Learning Assistant](#meet-steve-your-ai-learning-assistant)
-   * [Core Features](#core-features)
-   * [Technical Stack](#technical-stack)
-   * [Development Setup](#development-setup)
-   * [Acknowledgments](#acknowledgments)
+  - [Inspiration](#inspiration)
+  - [What it does](#what-it-does)
+  - [How we built it](#how-we-built-it)
+  - [Challenges we ran into](#challenges-we-ran-into)
+  - [Accomplishments that we're proud of](#accomplishments-that-were-proud-of)
+  - [What we learned](#what-we-learned)
+  - [What's next for EduSynapse](#whats-next-for-edusynapse)
+  - [Getting Started Experience](#getting-started-experience)
+  - [Main Workflow](#main-workflow)
+  - [Interactive Code Execution](#interactive-code-execution)
+  - [Meet STEVE - Your AI Learning Assistant](#meet-steve-your-ai-learning-assistant)
+  - [Core Features](#core-features)
+  - [Technical Stack](#technical-stack)
+  - [Development Setup](#development-setup)
+  - [Acknowledgments](#acknowledgments)
 
 <!-- TOC end -->
 
 <!-- TOC --><a name="edusynapse"></a>
+
 # EduSynapse
 
 Connor Love and TJ Raklovits
 
 EduSynapse is an intelligent learning platform that combines state-of-the-art AI technology with proven learning methodologies to create a personalized and effective educational experience.
 
-
 <!-- TOC --><a name="inspiration"></a>
+
 ## Inspiration
 
 Education is undergoing a massive transformation, yet many students still struggle with traditional one-size-fits-all learning approaches. We were inspired by the potential of AI to create a truly personalized learning experience that adapts to each student's unique learning style, pace, and interests. The breakthrough in AI scaling techniques, particularly the S1 paper, showed us how we could make this vision a reality.
 
 <!-- TOC --><a name="what-it-does"></a>
+
 ## What it does
 
 EduSynapse is an intelligent learning platform powered by STEVE (System for Teaching, Evaluating, and Visualizing Education), our custom AI assistant. It creates personalized learning paths, provides interactive feedback, and helps students master complex topics through:
@@ -44,17 +46,20 @@ EduSynapse is an intelligent learning platform powered by STEVE (System for Teac
 - **Real-time AI Assistance**: STEVE is always available to help explain concepts and answer questions
 
 <!-- TOC --><a name="how-we-built-it"></a>
+
 ## How we built it
 
 We combined cutting-edge technologies to create a robust and scalable platform:
 
-1. **AI Core**: 
+1. **AI Core**:
+
    - Custom-trained models using S1 scaling (steve-small, steve-medium)
    - Base model from Qwen 2.5
    - Local deployment using Ollama
    - DeepSeek-R1 for advanced reasoning
 
 2. **Frontend**:
+
    - Next.js 14 with App Router
    - TypeScript for type safety
    - shadcn/ui for a beautiful, accessible interface
@@ -67,23 +72,28 @@ We combined cutting-edge technologies to create a robust and scalable platform:
    - Custom spaced repetition algorithm
 
 <!-- TOC --><a name="challenges-we-ran-into"></a>
+
 ## Challenges we ran into
 
-1. **AI Model Training**: 
+1. **AI Model Training**:
+
    - Implementing S1 scaling correctly
    - Balancing model size with performance
    - Ensuring consistent quality across different types of content
 
 2. **Code Execution**:
+
    - Implementing secure sandboxing for Python and JavaScript
    - Managing memory usage with Pyodide
    - Ensuring fast execution times
 
 3. **Database Management**:
-  - Using Prisma to store user information in a robust, no SQL way
-  - Handling race conditions and developing pooling
- 
+
+- Using Prisma to store user information in a robust, no SQL way
+- Handling race conditions and developing pooling
+
 <!-- TOC --><a name="accomplishments-that-were-proud-of"></a>
+
 ## Accomplishments that we're proud of
 
 1. Successfully implemented a custom AI scaling approach based on cutting-edge research
@@ -93,14 +103,18 @@ We combined cutting-edge technologies to create a robust and scalable platform:
 5. Achieved seamless integration between AI assistance and human learning patterns
 
 <!-- TOC --><a name="what-we-learned"></a>
+
 ## What we learned
+
 1. **Database Management with Prisma**:
+
    - Efficient schema design for learning paths and user progress
    - Handling complex relationships between modules and user data
    - Implementing middleware for automatic timestamps and relations
    - Optimizing database queries for large-scale operations
 
 2. **AI Integration with Ollama**:
+
    - Setting up local model deployment and management
    - Optimizing model loading and response times
    - Implementing proper error handling and fallbacks
@@ -114,21 +128,25 @@ We combined cutting-edge technologies to create a robust and scalable platform:
    - Handling dynamic imports and code splitting
 
 <!-- TOC --><a name="whats-next-for-edusynapse"></a>
+
 ## What's next for EduSynapse
 
 1. **Enhanced Collaboration**:
+
    - Real-time collaborative workspaces
    - Peer learning features
    - Study group formation based on learning styles
    - Shared note-taking and annotation tools
 
 2. **Advanced AI Features**:
+
    - More sophisticated knowledge mapping
    - Improved personalization algorithms
    - Integration with additional AI models
    - Enhanced natural language understanding
 
 3. **Platform Expansion**:
+
    - Mobile application development
    - Offline learning capabilities
    - Integration with existing LMS systems
@@ -142,8 +160,8 @@ We combined cutting-edge technologies to create a robust and scalable platform:
 
 We're committed to making EduSynapse the most effective and accessible learning platform, helping students worldwide achieve their educational goals through the power of AI-assisted learning.
 
-
 <!-- TOC --><a name="getting-started-experience"></a>
+
 ## Getting Started Experience
 
 1. **Welcome Question**:
@@ -159,6 +177,7 @@ We're committed to making EduSynapse the most effective and accessible learning 
    - Personal interests and goals tracking
 
 <!-- TOC --><a name="main-workflow"></a>
+
 ## Main Workflow
 
 1. **Create Learning Path**: Start by creating a personalized learning path for any topic. The AI analyzes your interests and learning style to structure the perfect learning journey.
@@ -178,6 +197,7 @@ We're committed to making EduSynapse the most effective and accessible learning 
    - Assessment questions
 
 <!-- TOC --><a name="interactive-code-execution"></a>
+
 ## Interactive Code Execution
 
 All code blocks in content and examples support live execution:
@@ -188,6 +208,7 @@ All code blocks in content and examples support live execution:
 - **Interactive Examples**: Modify and experiment with code on the fly
 
 <!-- TOC --><a name="meet-steve-your-ai-learning-assistant"></a>
+
 ## Meet STEVE - Your AI Learning Assistant
 
 STEVE (System for Teaching, Evaluating, and Visualizing Education) is the powerful AI that drives EduSynapse. As your dedicated learning companion, STEVE helps you master new skills and build knowledge effectively:
@@ -217,6 +238,7 @@ STEVE comes equipped with three powerful tools:
    - Supports various mathematical notations and formats
 
 <!-- TOC --><a name="core-features"></a>
+
 ## Core Features
 
 - **AI-Powered Learning**: Utilizing a custom-trained AI model based on the S1 (Simple test-time scaling) approach from [this research paper](https://arxiv.org/pdf/2501.19393) and implemented using the [simplescaling/s1](https://github.com/simplescaling/s1) framework.
@@ -255,6 +277,7 @@ STEVE comes equipped with three powerful tools:
   - Adaptive difficulty scaling
 
 <!-- TOC --><a name="technical-stack"></a>
+
 ## Technical Stack
 
 - **Frontend**:
@@ -267,7 +290,6 @@ STEVE comes equipped with three powerful tools:
   - KaTeX for mathematical notation
   - D3.js and React Force Graph for visualizations
   - React Beautiful DnD for drag-and-drop
-
 
 - **Backend**:
 
@@ -300,6 +322,7 @@ STEVE comes equipped with three powerful tools:
   - Privacy protection
 
 <!-- TOC --><a name="development-setup"></a>
+
 ## Development Setup
 
 1. Clone the repository
@@ -315,6 +338,7 @@ STEVE comes equipped with three powerful tools:
 5. Run the development server: `npm run dev`
 
 <!-- TOC --><a name="acknowledgments"></a>
+
 ## Acknowledgments
 
 - [S1 Simple test-time scaling paper](https://arxiv.org/pdf/2501.19393)
@@ -324,3 +348,4 @@ STEVE comes equipped with three powerful tools:
 - [shadcn/ui](https://ui.shadcn.com) for the beautiful UI components
 - [Ollama](https://ollama.com) for local LLM hosting
 - [qwen2.5](https://github.com/QwenLM/Qwen2.5) for the base model of STEVE
+
