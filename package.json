@@ -61,6 +61,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "8.5.1",
     "fabric": "latest",
+    "framer-motion": "^12.4.3",
     "http": "latest",
     "input-otp": "1.4.1",
     "jsonwebtoken": "latest",
