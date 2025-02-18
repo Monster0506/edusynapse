@@ -9,6 +9,7 @@ import { SessionProvider } from "next-auth/react"; // Import SessionProvider
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ChatPopup from "@/components/ChatPopup";
 import "../app/globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +33,10 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     }
 
     if (userForegroundColor) {
-      document.documentElement.style.setProperty("--foreground", `var(--${userForegroundColor.toLowerCase()}-500)`);
+      document.documentElement.style.setProperty(
+        "--foreground",
+        `var(--${userForegroundColor.toLowerCase()}-500)`,
+      );
     }
   }, []);
 
@@ -41,23 +45,32 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   };
 
   return (
-    <SessionProvider session={session}> 
-      {/* Wraps everything with authentication context */}
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen bg-background text-foreground">
-            {/* Now QuickAccessToolbar will get the correct session */}
-            <Component {...pageProps} />
-            {showChat && (
-              <>
-                <FloatingChatButton onClick={toggleChatManager} isOpen={isChatManagerOpen} />
-                <ChatPopup isOpen={isChatManagerOpen} onClose={() => setIsChatManagerOpen(false)} />
-              </>
-            )}
-          </div>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </SessionProvider>
+    <>
+      <SessionProvider session={session}>
+        {/* Wraps everything with authentication context */}
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <div className="min-h-screen bg-background text-foreground">
+              {/* Now QuickAccessToolbar will get the correct session */}
+              <Component {...pageProps} />
+              {showChat && (
+                <>
+                  <FloatingChatButton
+                    onClick={toggleChatManager}
+                    isOpen={isChatManagerOpen}
+                  />
+                  <ChatPopup
+                    isOpen={isChatManagerOpen}
+                    onClose={() => setIsChatManagerOpen(false)}
+                  />
+                </>
+              )}
+            </div>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SessionProvider>
+      <Analytics />
+    </>
   );
 }
 
