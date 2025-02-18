@@ -8,7 +8,7 @@ export async function generateWelcome() {
     {
       role: "system",
       content:
-        "Generate a short, friendly welcome message for a user logging into an educational platform. Be super excited, but don't ask any questions",
+        "Generate a short, friendly welcome message for a user logging into an educational platform named EduSynapse. Be super excited, but don't ask any questions",
     },
   ];
 

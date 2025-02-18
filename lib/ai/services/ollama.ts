@@ -8,10 +8,8 @@ import {
   JSONSchema,
 } from "../interfaces/interfaces";
 
-// Initialize Hugging Face client
-const client = new HfInference(process.env.HUGGINGFACE_API_KEY || "");
+const client = new HfInference(process.env.HF_API_KEY);
 
-// Define types for tool calls
 interface ToolCall {
   function: {
     name: string;
@@ -19,108 +17,135 @@ interface ToolCall {
   };
 }
 
-/**
- * Orchestrates a conversation with an LLM, automatically handling tool execution
- * and multi-step interactions. Manages message history and tool recursion.
- *
- * @async
- * @function chat
- * @param {Array<Message>} messages - Conversation history in OpenAI format
- * @param {AdditionalParams} [additionalParams={}] - Additional parameters for Ollama API
- * @returns {Promise<ChatResponse>} {reply: string, messages: Array<Message>}
- *
- * @example
- * const conversation = await chat([
- *   { role: 'system', content: 'You are helpful' },
- *   { role: 'user', content: 'Calculate 2+2' }
- * ]);
- * // calls tool `calculator` with expression `2+2`
- * // output: `4`
- */
 export const chat = async (
   messages: Message[],
   additionalParams: AdditionalParams = {},
+  recursionDepth: number = 0,
+  maxRecursion: number = 5
 ): Promise<ChatResponse> => {
   try {
-    const chatCompletion = await client.chatCompletion({
-      model: "Qwen/Qwen2.5-3B",
-      messages: messages,
-      max_tokens: additionalParams.max_tokens || 500,
-      provider: "hf-inference",
-    });
-
-    const response = chatCompletion.choices[0].message;
-    const newMessages: Message[] = [];
-
-    if (response.content) {
-      newMessages.push({
-        role: "assistant",
-        content: response.content,
-      });
+    if (recursionDepth > maxRecursion) {
+      console.warn("Max recursion depth reached. Returning current response.");
+      return {
+        reply: "Max recursion depth reached",
+        messages,
+      };
     }
 
-    // Note: Tool calls implementation would need to be adapted for HF API
-    // Current HF chat models may not support function calling directly
+    console.log("Formatted Messages Sent:", JSON.stringify(messages, null, 2));
+
+    const response = await client.chatCompletion({
+      model: models.fast,
+      messages: messages,
+      provider: "hf-inference",
+      temperature: 0.5,
+      top_p: 0.7,
+      max_tokens: 200, // Setting max tokens to 2048
+      unique_id: Date.now(),
+      ...additionalParams,
+    });
+
+    console.log("Raw API response:", JSON.stringify(response, null, 2));
+
+    const message = response.choices[0]?.message;
+    const accumulatedContent = message?.content?.trim() || "No valid response received.";
+    console.log("Extracted Assistant Message:", accumulatedContent);
+
+    let toolCalls: ToolCall[] = [];
+    try {
+      const parsedContent = JSON.parse(accumulatedContent);
+      if (parsedContent.tool_calls) {
+        toolCalls = parsedContent.tool_calls;
+      }
+    } catch (error) {
+      console.log("No tool calls detected in response or invalid JSON format.");
+    }
+
+    const newMessages: Message[] = [];
+
+    if (toolCalls.length > 0) {
+      for (const toolCall of toolCalls) {
+        const { name: toolName, arguments: toolArgs } = toolCall.function;
+        let parsedArgs;
+        try {
+          parsedArgs = typeof toolArgs === "string" ? JSON.parse(toolArgs) : toolArgs;
+        } catch (parseErr) {
+          console.error("Error parsing tool arguments:", parseErr);
+          parsedArgs = toolArgs;
+        }
+
+        console.log(`\n--- Executing tool: ${toolName} with args:`, parsedArgs);
+
+        let result;
+        try {
+          result = await toolRegistry[toolName](parsedArgs);
+        } catch (toolErr) {
+          console.error("Tool execution error:", toolErr);
+          result = { error: toolErr.message || "Unknown error in tool." };
+        }
+
+        console.log(`Tool result for ${toolName}:`, result);
+
+        const toolMessage: Message = {
+          role: "tool",
+          content: JSON.stringify(result),
+          display: result.display || result.error || "Tool execution complete",
+        };
+        newMessages.push(toolMessage);
+      }
+
+      return chat([...messages, ...newMessages], additionalParams, recursionDepth + 1, maxRecursion);
+    }
+
+    const assistantMessage: Message = {
+      role: "assistant",
+      content: accumulatedContent,
+    };
+    newMessages.push(assistantMessage);
 
     return {
-      reply: response.content || "",
+      reply: accumulatedContent || "Oops! No response generated. Try adjusting the parameters.",
       messages: [...messages, ...newMessages],
     };
   } catch (error) {
-    console.error("Error in chat completion:", error);
+    console.error("Chat error:", error);
     throw error;
   }
 };
 
-/**
- * Generates structured JSON output from natural language input using a two-stage
- * model pipeline. First model produces analysis, second enforces JSON schema.
- *
- * @async
- * @function chatJSON
- * @param {Array<Message>} messages - Initial conversation messages
- * @param {JSONSchema} jsonSchema - JSON Schema definition for output validation
- * @returns {Promise<ChatResponse>} {reply: string, messages: Array<Message>}
- *
- * @example
- * const schema = {
- *   type: "object",
- *   properties: { age: { type: "integer" } },
- *   required: ["age"]
- * };
- * const data = await chatJSON([{ role: 'user', content: 'John is 35' }], schema);
- * // output: { "age": 35 }
- */
 export const chatJSON = async (
   messages: Message[],
   jsonSchema: JSONSchema,
-  additionalParams: AdditionalParams = {},
+  additionalParams: AdditionalParams = {}
 ): Promise<ChatResponse> => {
-  // Stage 1: Large model generates natural language analysis
-  const analysisResponse = await chat(messages, additionalParams);
-
-  // Stage 2: Small model formats with JSON schema
-  const formatMessage: Message = {
-    role: "user",
-    content: `Convert this analysis to JSON using the schema:\n${JSON.stringify(
-      jsonSchema,
-    )}\n\nAnalysis: ${analysisResponse.reply}`,
-  };
-
-  const structuredResponse = await client.chatCompletion({
-    model: "Qwen/Qwen2.5-3B",
-    messages: [formatMessage],
-    max_tokens: 500,
-    provider: "hf-inference",
-  });
-
-  const response = structuredResponse.choices[0].message;
-  messages.push(response);
-
-  return {
-    reply: response.content,
-    messages: messages,
-    analysis: analysisResponse.reply,
-  };
+  try {
+    const analysisResponse = await chat(messages, additionalParams);
+    
+    const formatMessage: Message = {
+      role: "user",
+      content: `Convert this analysis to JSON using the schema:\n${JSON.stringify(jsonSchema)}\n\nAnalysis: ${analysisResponse.reply}`,
+    };
+    
+    const structuredResponse = await client.chatCompletion({
+      model: models.fast,
+      messages: [formatMessage],
+      provider: "hf-inference",
+      temperature: 0.6,
+      format: jsonSchema,
+      stream: false,
+      ...additionalParams,
+    });
+    
+    console.log("Raw JSON API response:", JSON.stringify(structuredResponse, null, 2));
+    
+    const jsonContent = structuredResponse.choices[0]?.message?.content || "{}";
+    
+    return {
+      reply: jsonContent,
+      messages: [...messages, { role: "assistant", content: jsonContent }],
+    };
+  } catch (error) {
+    console.error("JSON generation error:", error);
+    throw error;
+  }
 };
-
