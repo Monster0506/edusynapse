@@ -18,7 +18,7 @@ interface PracticeQuestion {
 }
 
 export async function generate_practice(
-  module: ModuleInfo
+  module: ModuleInfo,
 ): Promise<PracticeQuestion[]> {
   const messages: Message[] = [
     {
@@ -42,15 +42,11 @@ If a coding_problem is not applicable, don't worry about asking a coding questio
     },
     {
       role: "user",
-      content: `Generate practice questions for the module titled "${
-        module.title
-      }". 
+      content: `Generate practice questions for the module titled "${module.title}". 
                 Module description: ${module.description}
                 Tags: ${module.tags.join(", ")}
                 
-                Create at least 3 questions focusing on these key areas: ${
-                  module.content.keyPoints?.join(", ") || "general concepts"
-                }.
+                Create at least 3 questions focusing on these key areas: ${module.content.keyPoints?.join(", ") || "general concepts"}.
                 Make sure to include at least one multiple choice question and one short answer question.`,
     },
   ];
@@ -101,24 +97,7 @@ If a coding_problem is not applicable, don't worry about asking a coding questio
     },
   };
 
-  const demo_response = [
-    {
-      question: "What is the capital of France?",
-      type: "multiple_choice",
-      options: ["Berlin", "Madrid", "Paris", "Rome"],
-    },
-    {
-      question: "Explain the theory of relativity.",
-      type: "short_answer",
-    },
-    {
-      question: "Implement a function to calculate the factorial of a number.",
-      type: "coding_problem",
-    },
-  ];
-  return demo_response;
-
-  // const response = await chatJSON(messages, schema, additionalParams);
+  const response = await chatJSON(messages, schema, additionalParams);
   console.log("[AI] Generated practice questions:", response.reply);
 
   const questions: PracticeQuestion[] = JSON.parse(response.reply);

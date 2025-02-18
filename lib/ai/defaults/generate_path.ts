@@ -27,40 +27,24 @@ export async function generate_path(topic: string): Promise<any> {
         objectives: {
           type: "array",
           items: {
-            type: "string",
+            type: "string"
           },
-          description: "Learning objectives for this module",
-        },
+          description: "Learning objectives for this module"
+        }
       },
       required: ["title", "description"],
     },
   };
 
-  const demo_response = `[
-    {
-      title: "Introduction to Python",
-      description: "Get started with the basics of Python programming.",
-      objectives: [
-        "Understand Python syntax and semantics",
-        "Write simple Python programs",
-      ],
-    },
-  ]`;
-  return JSON.parse(demo_response).map((module: any, index: number) => ({
+  const response = await chatJSON(messages, schema, additionalParams);
+  console.log("[AI] Generated path:", response.reply)
+  
+  // Parse the response and add IDs to each module
+  const modules = JSON.parse(response.reply);
+  return modules.map((module: any, index: number) => ({
     ...module,
     id: `module-${index + 1}`,
     status: "NOT_STARTED",
-    objectives: module.objectives || [],
-    }));
-  // const response = await chatJSON(messages, schema, additionalParams);
-  // console.log("[AI] Generated path:", response.reply);
-  //
-  // // Parse the response and add IDs to each module
-  // const modules = JSON.parse(response.reply);
-  // return modules.map((module: any, index: number) => ({
-  //   ...module,
-  //   id: `module-${index + 1}`,
-  //   status: "NOT_STARTED",
-  //   objectives: module.objectives || [],
-  // }));
+    objectives: module.objectives || []
+  }));
 }

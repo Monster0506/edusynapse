@@ -15,7 +15,7 @@ interface GradeResponse {
 }
 
 export async function grade_practice(
-  request: GradeRequest
+  request: GradeRequest,
 ): Promise<GradeResponse> {
   const messages: Message[] = [
     {
@@ -66,13 +66,6 @@ export async function grade_practice(
     },
   };
 
-  const demo_reply = `
-    {
-score: 2,
-feedback: "The answer is correct. Well done!"
-}
-    `;
-  return JSON.parse(demo_reply);
-  // const response = await chatJSON(messages, schema, additionalParams);
-  // return JSON.parse(response.reply);
+  const response = await chatJSON(messages, schema, additionalParams);
+  return JSON.parse(response.reply);
 }

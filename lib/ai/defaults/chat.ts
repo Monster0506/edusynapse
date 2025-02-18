@@ -18,20 +18,10 @@ export async function chat(prompt: string, additionalParams = {}) {
   // Get existing messages for context but don't save them to DB
   const messages = MessagesHandler.getMessages();
 
-  // const response = await ollamaChat(
-  //   [...messages, userMessage],
-  //   additionalParams,
-  // );
-  const response = {
-    reply: "This is a demo reply",
-    messages: [
-      {
-        role: "assistant",
-        content: "This is a demo reply",
-      },
-    ],
-    analysis: "This is a demo analysis",
-  };
+  const response = await ollamaChat(
+    [...messages, userMessage],
+    additionalParams,
+  );
 
   // Collect all new messages
   const newMessages: Message[] = [];

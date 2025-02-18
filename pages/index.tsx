@@ -8,15 +8,15 @@ import { Separator } from "@/components/ui/separator"
 import { motion } from "framer-motion"
 import { Footer } from "@/components/Footer"
 import { GitBranch, Code2, Network, Repeat, Bot, UserCog, FileText, Brain, Calculator } from "lucide-react"
-import QuickAccessToolbar from "@/components/QuickAccessToolbar"
+import HomePageToolbar from "@/components/HomePageToolbar"
 import { FeatureModal } from "@/components/FeatureModal"
-
+import { WaitlistModal } from "@/components/WaitlistModal"
 export default function Home() {
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
-
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
   return (
     <div className="relative flex min-h-screen flex-col">
-      <QuickAccessToolbar />
+      <HomePageToolbar onOpenWaitlist={() => setIsWaitlistOpen(true)} />
       <main className="flex-1">
         <section className="flex min-h-screen flex-col items-center justify-center space-y-10 py-24">
           <motion.div
@@ -52,7 +52,8 @@ export default function Home() {
             >
               Transform your learning with AI-tailored educational journeys and real-time assistance.
               <br />
-              Enjoy interactive code execution, smart reviews, and personalized feedback for a truly next-level studying experience.
+              Enjoy interactive code execution, smart reviews, and personalized feedback for a truly next-level studying
+              experience.
             </motion.span>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -60,8 +61,8 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="flex gap-4"
             >
-              <Button size="lg" className="h-12 px-8">
-                Get Started
+              <Button size="lg" className="h-12 px-8" onClick={() => setIsWaitlistOpen(true)}>
+                Join Waitlist
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-8">
                 View Demo
@@ -72,7 +73,7 @@ export default function Home() {
 
         <Separator className="my-12" />
 
-        <section id="features" className="py-12 md:py-24 lg:py-32">
+        <section className="py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6 max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -116,7 +117,7 @@ export default function Home() {
 
         <Separator className="my-12" />
 
-        <section id="steve" className="py-12 md:py-24 lg:py-32">
+        <section className="py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6 max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -160,6 +161,7 @@ export default function Home() {
         imageSrc={selectedFeature?.imageSrc || ""}
         featureName={selectedFeature?.name || ""}
       />
+      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </div>
   )
 }
@@ -175,37 +177,43 @@ const features: Feature[] = [
   {
     name: "Adaptive Paths",
     // Expanded description explaining the benefit and uniqueness
-    description: "AI-generated learning journeys tailored to your style, dynamically adjusting modules and difficulty based on your progress and performance, ensuring you stay both challenged and motivated.",
+    description:
+      "AI-generated learning journeys tailored to your style, dynamically adjusting modules and difficulty based on your progress and performance, ensuring you stay both challenged and motivated.",
     icon: GitBranch,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
   {
     name: "Code Execution",
-    description: "Run Python/JS directly in your browser with our secure sandbox environment—experiment with code on the fly and see outputs instantly.",
+    description:
+      "Run Python/JS directly in your browser with our secure sandbox environment—experiment with code on the fly and see outputs instantly.",
     icon: Code2,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
   {
     name: "Knowledge Graph",
-    description: "Visualize concept relationships through an interactive graph that helps you grasp complex topics by revealing how ideas connect and overlap.",
+    description:
+      "Visualize concept relationships through an interactive graph that helps you grasp complex topics by revealing how ideas connect and overlap.",
     icon: Network,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
   {
     name: "Smart Reviews",
-    description: "Optimized scheduling powered by our Spaced Repetition System to help you retain information longer with customized review intervals.",
+    description:
+      "Optimized scheduling powered by our Spaced Repetition System to help you retain information longer with customized review intervals.",
     icon: Repeat,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
   {
     name: "AI Tutor",
-    description: "Access 24/7 assistance from STEVE, your personal AI tutor ready to offer on-demand explanations, clarifications, and examples.",
+    description:
+      "Access 24/7 assistance from STEVE, your personal AI tutor ready to offer on-demand explanations, clarifications, and examples.",
     icon: Bot,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
   {
     name: "Personalization",
-    description: "Get content curated to your interests and learning style, ensuring maximum engagement and efficient knowledge acquisition across various subjects.",
+    description:
+      "Get content curated to your interests and learning style, ensuring maximum engagement and efficient knowledge acquisition across various subjects.",
     icon: UserCog,
     imageSrc: "/placeholder.svg?height=300&width=400",
   },
@@ -215,17 +223,21 @@ const steveFeatures = [
   {
     name: "File Reader",
     // Expanded description with a bit more depth
-    description: "Upload and analyze your own study materials—STEVE extracts key points, creates summaries, and suggests quizzes for a deeper understanding of your content.",
+    description:
+      "Upload and analyze your own study materials—STEVE extracts key points, creates summaries, and suggests quizzes for a deeper understanding of your content.",
     icon: FileText,
   },
   {
     name: "Think Tool",
-    description: "Break down complex concepts step by step. STEVE uses advanced reasoning (DeepSeek-R1) to help you explore detailed explanations and logical thought processes.",
+    description:
+      "Break down complex concepts step by step. STEVE uses advanced reasoning (DeepSeek-R1) to help you explore detailed explanations and logical thought processes.",
     icon: Brain,
   },
   {
     name: "Math Engine",
-    description: "Perform advanced calculations with structured explanations, covering everything from basic arithmetic to higher-level operations, complete with detailed solution steps.",
+    description:
+      "Perform advanced calculations with structured explanations, covering everything from basic arithmetic to higher-level operations, complete with detailed solution steps.",
     icon: Calculator,
   },
 ]
+
