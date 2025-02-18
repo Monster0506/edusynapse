@@ -16,7 +16,7 @@
     "@huggingface/inference": "^3.3.4",
     "@monster0506/tjeditor": "^0.1.0",
     "@next-auth/prisma-adapter": "latest",
-    "@prisma/client": "^6.3.1",
+    "@prisma/client": "^6.4.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-aspect-ratio": "^1.1.1",
