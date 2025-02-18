@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -25,7 +25,9 @@ export default async function handler(
   }
 
   if (!Array.isArray(interests) || interests.length === 0) {
-    return res.status(400).json({ message: "Interests must be a non-empty array" });
+    return res
+      .status(400)
+      .json({ message: "Interests must be a non-empty array" });
   }
 
   if (
@@ -86,7 +88,9 @@ export default async function handler(
     console.error("Signup error:", error);
     if (
       error instanceof Error &&
-      error.message.includes("Unique constraint failed on the fields: (`email`)")
+      error.message.includes(
+        "Unique constraint failed on the fields: (`email`)"
+      )
     ) {
       return res.status(400).json({ message: "Email already in use" });
     }

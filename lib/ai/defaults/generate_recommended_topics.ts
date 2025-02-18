@@ -42,6 +42,14 @@ export async function generateRecommendedTopics(interests: string[], amount: num
     },
   };
 
-  const response = await chatJSON(messages, jsonSchema, {tools: []});
-  return response.reply;
+  return [
+    {
+        title: "test",
+        description: "test",
+        difficulty: 1,
+        duration: "10 minutes",
+    }
+  ];
+  // const response = await chatJSON(messages, jsonSchema, {tools: []});
+  // return response.reply;
 }
