@@ -226,12 +226,11 @@ STEVE comes equipped with three powerful tools:
 - **Spaced Repetition System**: Implements an advanced spaced repetition algorithm using our custom ease factor formula:
 
   ```typescript
-  EF' = EF * (1 + a)     // for correct answers
-  EF' = EF * (1 - b)     // for incorrect answers
+  EF' = EF * (1 + a)^s     // for correct answers
+  EF' = EF * (1 - b)^s     // for incorrect answers
   ```
 
   where:
-
   - EF' is the new ease factor
   - EF is the current ease factor (default: 2.5)
   - a = 0.1 (correct answer factor)
