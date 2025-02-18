@@ -1,4 +1,4 @@
-import ollama from "ollama";
+import { HfInference } from "@huggingface/inference";
 import { tools, toolRegistry } from "../constants/tools";
 import { models } from "../constants/models";
 import {
@@ -8,11 +8,14 @@ import {
   JSONSchema,
 } from "../interfaces/interfaces";
 
+// Initialize Hugging Face client
+const client = new HfInference(process.env.HUGGINGFACE_API_KEY || "");
+
 // Define types for tool calls
 interface ToolCall {
   function: {
     name: string;
-    arguments: string; // Arguments are typically a JSON string
+    arguments: string;
   };
 }
 
@@ -38,71 +41,35 @@ export const chat = async (
   messages: Message[],
   additionalParams: AdditionalParams = {},
 ): Promise<ChatResponse> => {
-  const response = await ollama.chat({
-    messages: messages,
-    stream: true,
-    model: models.fast, // Default model
-    tools: tools,
-    ...additionalParams,
-  });
-
-  let accumulatedContent = "";
-  const toolCalls: ToolCall[] = [];
-  const newMessages: Message[] = [];
-
-  // Process stream chunks
-  for await (const chunk of response) {
-    accumulatedContent += chunk.message?.content || "";
-
-    if (chunk.message?.tool_calls) {
-      toolCalls.push(...chunk.message.tool_calls);
-    }
-  }
-
-  // Process tool calls
-  if (toolCalls.length > 0) {
-    for (const toolCall of toolCalls) {
-      const { name: toolName, arguments: toolArgs } = toolCall.function;
-
-      let parsedArgs;
-      try {
-        // Handle both string and object arguments
-        parsedArgs =
-          typeof toolArgs === "string" ? JSON.parse(toolArgs) : toolArgs;
-        console.log("Parsed tool arguments:", parsedArgs);
-      } catch (error) {
-        console.error("Error parsing tool arguments:", toolArgs, error);
-        parsedArgs = toolArgs; // Fallback to raw data
-      }
-
-      console.log("Executing tool:", toolName, "Args:", parsedArgs);
-      const result = await toolRegistry[toolName](parsedArgs);
-      console.log("Tool Result:", result);
-
-      const toolMessage: Message = {
-        role: "tool",
-        content:
-          result.result?.toString() || result.error?.toString() || "No result",
-        display: result.display || result.error || "No display content",
-      };
-      newMessages.push(toolMessage);
-    }
-
-    // Recursively call `chat` with updated messages (including tool responses)
-    return chat([...messages, ...newMessages], additionalParams);
-  }
-
-  // Add assistant's response ONLY in newMessages
-  if (accumulatedContent.trim()) {
-    newMessages.push({
-      role: "assistant",
-      content: accumulatedContent,
+  try {
+    const chatCompletion = await client.chatCompletion({
+      model: "Qwen/Qwen2.5-3B",
+      messages: messages,
+      max_tokens: additionalParams.max_tokens || 500,
+      provider: "hf-inference",
     });
+
+    const response = chatCompletion.choices[0].message;
+    const newMessages: Message[] = [];
+
+    if (response.content) {
+      newMessages.push({
+        role: "assistant",
+        content: response.content,
+      });
+    }
+
+    // Note: Tool calls implementation would need to be adapted for HF API
+    // Current HF chat models may not support function calling directly
+
+    return {
+      reply: response.content || "",
+      messages: [...messages, ...newMessages],
+    };
+  } catch (error) {
+    console.error("Error in chat completion:", error);
+    throw error;
   }
-
-  console.log("Final Response:", accumulatedContent);
-
-  return { reply: accumulatedContent, messages: [...messages, ...newMessages] };
 };
 
 /**
@@ -140,22 +107,20 @@ export const chatJSON = async (
     )}\n\nAnalysis: ${analysisResponse.reply}`,
   };
 
-  const structuredResponse = await ollama.chat({
+  const structuredResponse = await client.chatCompletion({
+    model: "Qwen/Qwen2.5-3B",
     messages: [formatMessage],
-    model: models.fast,
-    stream: false,
-    format: jsonSchema,
-    options: {
-      temperature: 0.6,
-    },
-    ...additionalParams,
+    max_tokens: 500,
+    provider: "hf-inference",
   });
 
-  messages.push(structuredResponse.message);
+  const response = structuredResponse.choices[0].message;
+  messages.push(response);
 
   return {
-    reply: structuredResponse.message.content,
+    reply: response.content,
     messages: messages,
     analysis: analysisResponse.reply,
   };
 };
+

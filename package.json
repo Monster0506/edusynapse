@@ -13,6 +13,7 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.1",
+    "@huggingface/inference": "^3.3.4",
     "@monster0506/tjeditor": "^0.1.0",
     "@next-auth/prisma-adapter": "latest",
     "@prisma/client": "^6.3.1",

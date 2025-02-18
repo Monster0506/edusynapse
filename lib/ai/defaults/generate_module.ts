@@ -139,47 +139,47 @@ export async function generate_modules(
       required: ["title", "description", "content", "tags"],
     };
 
-    const demo_response = {
-      reply: `# The use of Python for Data Science
-## Table of Contents
-1. [Introduction](#Introduction)
-2. [What is Data Science?](#What-is-Data-Science?)
-3. [Why Python?](#Why-Python?)
-4. [Setting up Python for Data Science](#Setting-up-Python-for-Data-Science)
-5. [Python Libraries for Data Science](#Python-Libraries-for-Data-Science)
-6. [Conclusion](#Conclusion)
-7. [Quiz](#Quiz)
-## Introduction
-`,
-    };
-    return {
-      ...demo_response,
-      content: JSON.parse(demo_response.reply),
-    };
-    // const response = await chatJSON(messages, schema, additionalParams);
-    //   const reply = JSON.parse(response.reply);
-    //   reply.content.text = response.analysis;
-    //
-    //   const savedModule = await prisma.aIModule.create({
-    //     data: {
-    //       title: reply.title,
-    //       description: reply.description,
-    //       content: reply.content,
-    //       tags: reply.tags,
-    //       status: "ACTIVE",
-    //       userId: userId || null,
-    //     },
-    //   });
-    //
-    //   return {
-    //     ...savedModule,
-    //     userId // Include userId in the returned data
-    //   };
-    // } catch (error) {
-    //   throw error;
-    // }
-  } catch (error) {
-    console.error("Error generating module:", error);
-    throw error;
-  }
+//     const demo_response = {
+//       reply: `# The use of Python for Data Science
+// ## Table of Contents
+// 1. [Introduction](#Introduction)
+// 2. [What is Data Science?](#What-is-Data-Science?)
+// 3. [Why Python?](#Why-Python?)
+// 4. [Setting up Python for Data Science](#Setting-up-Python-for-Data-Science)
+// 5. [Python Libraries for Data Science](#Python-Libraries-for-Data-Science)
+// 6. [Conclusion](#Conclusion)
+// 7. [Quiz](#Quiz)
+// ## Introduction
+// `,
+//     };
+//     return {
+//       ...demo_response,
+//       content: JSON.parse(demo_response.reply),
+//     };
+    const response = await chatJSON(messages, schema, additionalParams);
+      const reply = JSON.parse(response.reply);
+      reply.content.text = response.analysis;
+    
+      const savedModule = await prisma.aIModule.create({
+        data: {
+          title: reply.title,
+          description: reply.description,
+          content: reply.content,
+          tags: reply.tags,
+          status: "ACTIVE",
+          userId: userId || null,
+        },
+      });
+    
+      return {
+        ...savedModule,
+        userId // Include userId in the returned data
+      };
+    } catch (error) {
+      throw error;
+    }
+  // } catch (error) {
+  //   console.error("Error generating module:", error);
+  //   throw error;
+  // }
 }
