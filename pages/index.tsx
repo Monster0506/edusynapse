@@ -1,20 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { motion } from "framer-motion"
-import { Footer } from "@/components/Footer"
-import { GitBranch, Code2, Network, Repeat, Bot, UserCog, FileText, Brain, Calculator } from "lucide-react"
-import HomePageToolbar from "@/components/HomePageToolbar"
-import { FeatureModal } from "@/components/FeatureModal"
-import { WaitlistModal } from "@/components/WaitlistModal"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import { Footer } from "@/components/Footer";
+import {
+  GitBranch,
+  Code2,
+  Network,
+  Repeat,
+  Bot,
+  UserCog,
+  FileText,
+  Brain,
+  Calculator,
+} from "lucide-react";
+import HomePageToolbar from "@/components/HomePageToolbar";
+import { FeatureModal } from "@/components/FeatureModal";
+import { WaitlistModal } from "@/components/WaitlistModal";
 
 export default function Home() {
-  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null)
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
+  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
   return (
     <div className="relative flex min-h-screen flex-col">
       <HomePageToolbar onOpenWaitlist={() => setIsWaitlistOpen(true)} />
@@ -33,7 +43,8 @@ export default function Home() {
               href="#"
               className="inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-sm font-medium"
             >
-              🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Introducing EduSynapse
+              🎉 <Separator className="mx-2 h-4" orientation="vertical" />{" "}
+              Introducing EduSynapse
             </motion.a>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -51,10 +62,11 @@ export default function Home() {
               transition={{ delay: 0.5 }}
               className="max-w-[750px] text-center text-lg text-muted-foreground sm:text-xl"
             >
-              Transform your learning with AI-tailored educational journeys and real-time assistance.
+              Transform your learning with AI-tailored educational journeys and
+              real-time assistance.
               <br />
-              Enjoy interactive code execution, smart reviews, and personalized feedback for a truly next-level studying
-              experience.
+              Enjoy interactive code execution, smart reviews, and personalized
+              feedback for a truly next-level studying experience.
             </motion.span>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -62,13 +74,17 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="flex gap-4"
             >
-              <Button size="lg" className="h-12 px-8" onClick={() => setIsWaitlistOpen(true)}>
+              <Button
+                size="lg"
+                className="h-12 px-8"
+                onClick={() => setIsWaitlistOpen(true)}
+              >
                 Join Waitlist
               </Button>
               <a href="https://youtu.be/9DW2QBCzRc0">
-              <Button size="lg" variant="outline" className="h-12 px-8">
-                View Demo
-              </Button>
+                <Button size="lg" variant="outline" className="h-12 px-8">
+                  View Demo
+                </Button>
               </a>
             </motion.div>
           </motion.div>
@@ -76,7 +92,7 @@ export default function Home() {
 
         <Separator className="my-12" />
 
-        <section className="py-12 md:py-24 lg:py-32">
+        <section className="py-12 md:py-24 lg:py-32" id="features">
           <div className="container px-4 md:px-6 max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -85,7 +101,9 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="flex flex-col items-center justify-center gap-4 text-center mb-12"
             >
-              <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">Core Features</h2>
+              <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
+                Core Features
+              </h2>
               <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
                 Combining cutting-edge AI with proven learning methodologies
               </p>
@@ -109,7 +127,9 @@ export default function Home() {
                     <feature.icon className="h-12 w-12 text-primary" />
                     <div className="space-y-2">
                       <h3 className="font-bold">{feature.name}</h3>
-                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {feature.description}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -120,7 +140,7 @@ export default function Home() {
 
         <Separator className="my-12" />
 
-        <section className="py-12 md:py-24 lg:py-32">
+        <section className="py-12 md:py-24 lg:py-32" id="steve">
           <div className="container px-4 md:px-6 max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -129,7 +149,9 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="flex flex-col items-center justify-center gap-4 text-center mb-12"
             >
-              <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">Meet STEVE</h2>
+              <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
+                Meet STEVE
+              </h2>
               <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
                 Your AI assistant powered by S1 scaling and DeepSeek-R1
               </p>
@@ -164,16 +186,19 @@ export default function Home() {
         imageSrc={selectedFeature?.imageSrc || ""}
         featureName={selectedFeature?.name || ""}
       />
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
+      <WaitlistModal
+        isOpen={isWaitlistOpen}
+        onClose={() => setIsWaitlistOpen(false)}
+      />
     </div>
-  )
+  );
 }
 
 interface Feature {
-  name: string
-  description: string
-  icon: React.ElementType
-  imageSrc: string
+  name: string;
+  description: string;
+  icon: React.ElementType;
+  imageSrc: string;
 }
 
 const features: Feature[] = [
@@ -220,7 +245,7 @@ const features: Feature[] = [
     icon: UserCog,
     imageSrc: "/pictures/Profile.jpeg?height=300&width=400",
   },
-]
+];
 
 const steveFeatures = [
   {
@@ -242,5 +267,4 @@ const steveFeatures = [
       "Perform advanced calculations with structured explanations, covering everything from basic arithmetic to higher-level operations, complete with detailed solution steps.",
     icon: Calculator,
   },
-]
-
+];
