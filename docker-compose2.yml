@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://edusynapse:password@postgres:5432/edusynapse
+      - OLLAMA_URL=http://localhost:11434
+    depends_on:
+      - postgres
+      - ollama
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: edusynapse
+      POSTGRES_USER: edusynapse
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - E:/models:/models
+    environment:
+      - OLLAMA_MODELS=/models
+    ports:
+      - "11434:11434"
+
+volumes:
+  postgres_data:

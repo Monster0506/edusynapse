@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama:/root/.ollama # Persistent storage for Ollama
+      - E:/:/models # Mount the E: drive to /models
+    environment:
+      - OLLAMA_MODELS=/models/models # Set the environment variable
+    ports:
+      - "11434:11434" # Expose the Ollama API port
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu] # Request GPU resources (for NVIDIA GPUs)
+    # Uncomment the following lines for AMD GPU support:
+    # devices:
+    #   - /dev/kfd
+    #   - /dev/dri
+    # command: ["--device=/dev/kfd", "--device=/dev/dri"]
+
+volumes:
+  ollama: # Define a named volume for Ollama's persistent storage

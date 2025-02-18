@@ -1,0 +1,14 @@
+# Use the official Ollama base image
+FROM ollama/ollama:latest
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy all files from the current directory to /app in the container
+COPY . .
+
+# Optionally, install additional dependencies if needed
+# RUN apt-get update && apt-get install -y some-package
+
+# Set the default command to run when the container starts
+CMD ["ollama", "serve"]
