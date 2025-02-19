@@ -10,12 +10,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import type { Message } from "@/lib/ai/interfaces/interfaces"
 import { userModels } from "@/lib/ai/constants/models"
 
 interface ChatPopupProps {
   isOpen: boolean
   onClose: () => void
+}
+
+interface Message {
+  id: string
+  chatId: string
+  content: string
+  role: "user" | "assistant" | "tool"
+  createdAt: string
+  updatedAt: string
+  attachments?: { name: string; url: string }[]
+  display?: string
 }
 
 const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose }) => {
@@ -430,8 +440,10 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose }) => {
     let toolContent = ""
     if (message.role === "assistant" && index < messages.length - 1) {
       const nextMessage = messages[index + 1]
-      if (nextMessage.role === "tool") {
-        toolContent = nextMessage.content
+      if (nextMessage.role === "tool" || nextMessage.content.includes("[calculator]")) {
+        toolContent = nextMessage.content.includes("[calculator]")
+          ? nextMessage.content.replace("[calculator]", "").trim()
+          : nextMessage.display || nextMessage.content
       }
     }
 
@@ -477,10 +489,37 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose }) => {
               {message.content}
             </ReactMarkdown>
 
-            {/* Render tool content if it exists */}
             {toolContent && (
-              <div className="mt-2 p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/50 text-yellow-900 dark:text-yellow-100">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{toolContent}</ReactMarkdown>
+              <div className="mt-2 p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
+                {nextMessage?.content.includes("[calculator]") && (
+                  <span className="font-medium text-zinc-500 dark:text-zinc-400">Calculator: </span>
+                )}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code({ node, inline, className, children, ...props }) {
+                      return (
+                        <code
+                          className={`${
+                            inline ? "bg-zinc-200 dark:bg-zinc-700" : "block bg-zinc-200 dark:bg-zinc-700 p-2"
+                          } font-mono text-sm rounded px-1`}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      )
+                    },
+                    pre({ node, children, ...props }) {
+                      return (
+                        <pre className="bg-zinc-200 dark:bg-zinc-700 rounded-lg p-3 overflow-x-auto my-2" {...props}>
+                          {children}
+                        </pre>
+                      )
+                    },
+                  }}
+                >
+                  {toolContent}
+                </ReactMarkdown>
               </div>
             )}
           </div>
@@ -623,8 +662,10 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose }) => {
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-muted/50 scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent pb-[60px]" ref={chatContainerRef}>
-
+          <div
+            className="flex-1 overflow-y-auto p-2 space-y-2 bg-muted/50 scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent pb-[60px]"
+            ref={chatContainerRef}
+          >
             {messages.map((message, index) => renderMessage(message, index))}
             {isLoading && (
               <div className="flex justify-start mb-4">
@@ -638,45 +679,42 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose }) => {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 p-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-0 w-full">
+          <div className="flex-shrink-0 p-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-10 w-full">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.md,.json,.csv,.log,.js,.ts,.tsx,.jsx,.html,.css"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <div className="relative flex-1">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type a message..."
+                  className="w-full resize-none overflow-y-auto h-auto min-h-[44px] max-h-[120px] px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring pr-12 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit(e)
+                    }
+                  }}
+                  style={{
+                    height: `${Math.min(120, Math.max(44, input.split("\n").length * 20))}px`,
+                  }}
+                />
 
-
-          <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-          <Input
-            ref={fileInputRef}
-            type="file"
-            accept=".txt,.md,.json,.csv,.log,.js,.ts,.tsx,.jsx,.html,.css"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <div className="relative flex-1">
-          <textarea
-  value={input}
-  onChange={(e) => setInput(e.target.value)}
-  placeholder="Type a message..."
-  className="w-full resize-none overflow-y-auto h-auto min-h-[44px] max-h-[120px] px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring pr-12 text-sm"
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  }}
-  style={{
-    height: `${Math.min(120, Math.max(44, input.split("\n").length * 20))}px`,
-  }}
-/>
-
-
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isLoading || !input.trim() || !selectedChatId}
-              className="absolute right-2 bottom-2 h-7 w-7 hover:bg-accent"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </form>
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={isLoading || !input.trim() || !selectedChatId}
+                  className="absolute right-2 bottom-3 h-7 w-7 hover:bg-accent"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
