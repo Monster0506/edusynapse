@@ -20,12 +20,8 @@ import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
-import {
-  CodeIcon as CodeBracketIcon,
-  CalculatorIcon,
-  TextIcon as DocumentTextIcon,
-} from "lucide-react";
-import { Copy, Play, Loader2 } from "lucide-react";
+import { CodeIcon as CodeBracketIcon, CalculatorIcon, TextIcon as DocumentTextIcon } from 'lucide-react';
+import { Copy, Play, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -299,7 +295,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
 
   return (
     <div className="relative group">
-      <pre className="relative rounded-lg bg-gray-800 p-4">
+      <pre className="relative rounded-lg bg-gray-800 p-4 overflow-x-auto">
         <div className="absolute right-2 top-2 flex gap-2">
           <button
             onClick={handleCopy}
@@ -330,7 +326,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
         </div>
         <code
           dangerouslySetInnerHTML={{ __html: highlighted }}
-          className={className}
+          className={`${className} inline-block`}
           {...props}
         />
       </pre>
@@ -513,7 +509,7 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       <Progress value={progress} className="w-full" />
-      <p className="text-sm text-muted-foreground text-center">
+      <p className="text-sm text-foreground text-center">
         Progress: {progress.toFixed(0)}%
       </p>
 
@@ -539,7 +535,7 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
             <CardHeader>
               <CardTitle>Introduction</CardTitle>
             </CardHeader>
-            <CardContent className="prose max-w-none">
+            <CardContent className="prose prose-invert max-w-none text-foreground">
               <ReactMarkdown
                 components={{
                   code: CodeBlock,
@@ -557,7 +553,7 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
             <CardHeader>
               <CardTitle>Content</CardTitle>
             </CardHeader>
-            <CardContent className="prose max-w-none">
+            <CardContent className="prose prose-invert max-w-none text-foreground">
               <ReactMarkdown
                 components={{
                   code: CodeBlock,
@@ -579,8 +575,8 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
               <ul className="space-y-4 list-none pl-0">
                 {content.keyPoints.map((point, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
-                      <span className="text-sm font-semibold text-primary">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-background/10 flex items-center justify-center mt-0.5">
+                      <span className="text-sm font-semibold text-foreground">
                         {index + 1}
                       </span>
                     </div>
@@ -612,8 +608,8 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
                     <span className="capitalize">{example.type} Example</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
+                <CardContent className="overflow-x-auto">
+                  <div className="min-w-[600px]">
                     {example.type === "code" ? (
                       <ReactMarkdown
                         components={{
@@ -627,9 +623,9 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
                         <MathParagraph>{example.content}</MathParagraph>
                       </div>
                     ) : (
-                      <div className="bg-muted p-4 rounded-md">
+                      <div className="bg-muted p-4 rounded-md text-foreground">
                         <ReactMarkdown
-                          className="prose max-w-none"
+                          className="prose prose-invert max-w-none text-foreground"
                           components={{
                             code: CodeBlock,
                             p: MathParagraph,
@@ -640,13 +636,13 @@ const ModuleContent: React.FC<ModuleContentProps> = ({
                       </div>
                     )}
                   </div>
-                  <div className="mt-4 p-4 bg-muted rounded-md border-l-4 border-primary">
-                    <h4 className="font-medium text-foreground mb-2">
-                      Explanation
-                    </h4>
-                    <MathParagraph>{example.explanation}</MathParagraph>
-                  </div>
                 </CardContent>
+                <div className="mt-4 p-4 bg-muted rounded-md border-l-4 border-primary">
+                  <h4 className="font-medium text-foreground mb-2">
+                    Explanation
+                  </h4>
+                  <MathParagraph>{example.explanation}</MathParagraph>
+                </div>
               </Card>
             ))}
           </div>

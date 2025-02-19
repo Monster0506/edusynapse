@@ -9,14 +9,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
 interface Module {
-  id: string;
-  title: string;
-  description?: string;
-  tags: string[];
+  id: string
+  title: string
+  description?: string
+  tags: string[]
 }
 
 export default function KnowledgeGraphPage() {
-  const { data: modules, isLoading, error } = useQuery<Module[]>("knowledgeGraph", async () => {
+  const {
+    data: modules,
+    isLoading,
+    error,
+  } = useQuery<Module[]>("knowledgeGraph", async () => {
     const token = localStorage.getItem("token")
     if (!token) throw new Error("No token found")
 
@@ -75,11 +79,11 @@ export default function KnowledgeGraphPage() {
     <div className="min-h-screen">
       <QuickAccessToolbar />
       <div className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className="h-[calc(100vh-120px)]">
           <CardHeader>
             <CardTitle className="text-4xl font-bold text-primary">Knowledge Graph</CardTitle>
           </CardHeader>
-          <CardContent className="h-[calc(100vh-200px)]">
+          <CardContent className="h-[calc(100%-5rem)] bg-background">
             <KnowledgeGraph modules={modules} />
           </CardContent>
         </Card>
@@ -87,3 +91,4 @@ export default function KnowledgeGraphPage() {
     </div>
   )
 }
+
