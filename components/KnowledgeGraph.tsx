@@ -1,73 +1,74 @@
-"use client";
+"use client"
 
-import { useRef, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
+import { useRef, useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import { useTheme } from "next-themes"
 
 const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
   ssr: false,
-});
+})
 
 interface Module {
-  id: string;
-  title: string;
-  description?: string;
-  tags: string[];
+  id: string
+  title: string
+  description?: string
+  tags: string[]
 }
 
 interface KnowledgeGraphProps {
-  modules: Module[];
+  modules: Module[]
 }
 
 interface GraphData {
   nodes: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    val: number;
-    isModule?: boolean;
-    isTag?: boolean;
-    color?: string;
-  }>;
+    id: string
+    name: string
+    description?: string
+    val: number
+    isModule?: boolean
+    isTag?: boolean
+    color?: string
+  }>
   links: Array<{
-    source: string;
-    target: string;
-    name?: string;
-    color?: string;
-  }>;
+    source: string
+    target: string
+    name?: string
+    color?: string
+  }>
 }
 
 function stringToColor(str: string): string {
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
 
-  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+  const c = (hash & 0x00ffffff).toString(16).toUpperCase()
 
-  return "#" + "00000".substring(0, 6 - c.length) + c;
+  return "#" + "00000".substring(0, 6 - c.length) + c
 }
 
 export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
   const [graphData, setGraphData] = useState<GraphData>({
     nodes: [],
     links: [],
-  });
-  const [mounted, setMounted] = useState(false);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const fgRef = useRef();
+  })
+  const [mounted, setMounted] = useState(false)
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  const fgRef = useRef()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted) return
 
-    const nodes: GraphData["nodes"] = [];
-    const links: GraphData["links"] = [];
-    const tagMap = new Map<string, Set<string>>();
+    const nodes: GraphData["nodes"] = []
+    const links: GraphData["links"] = []
+    const tagMap = new Map<string, Set<string>>()
 
     modules.forEach((module) => {
       nodes.push({
@@ -78,22 +79,22 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
         isModule: true,
         isTag: false,
         color: theme === "dark" ? "#fff" : "#000",
-      });
+      })
 
       if (module.tags) {
         module.tags.forEach((tag) => {
-          const normalizedTag = tag.toLowerCase().trim();
+          const normalizedTag = tag.toLowerCase().trim()
           if (!tagMap.has(normalizedTag)) {
-            tagMap.set(normalizedTag, new Set());
+            tagMap.set(normalizedTag, new Set())
           }
-          tagMap.get(normalizedTag)?.add(module.id);
-        });
+          tagMap.get(normalizedTag)?.add(module.id)
+        })
       }
-    });
+    })
 
     tagMap.forEach((moduleIds, tag) => {
-      const tagId = `tag-${tag}`;
-      const tagColor = stringToColor(tag);
+      const tagId = `tag-${tag}`
+      const tagColor = stringToColor(tag)
 
       nodes.push({
         id: tagId,
@@ -102,7 +103,7 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
         isModule: false,
         isTag: true,
         color: tagColor,
-      });
+      })
 
       moduleIds.forEach((moduleId) => {
         links.push({
@@ -110,10 +111,10 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
           target: moduleId,
           name: tag,
           color: tagColor,
-        });
-      });
+        })
+      })
 
-      const moduleIdArray = Array.from(moduleIds);
+      const moduleIdArray = Array.from(moduleIds)
       for (let i = 0; i < moduleIdArray.length; i++) {
         for (let j = i + 1; j < moduleIdArray.length; j++) {
           links.push({
@@ -121,18 +122,32 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
             target: moduleIdArray[j],
             name: tag,
             color: tagColor,
-          });
+          })
         }
       }
-    });
+    })
 
-    setGraphData({ nodes, links });
-  }, [modules, theme, mounted]);
+    setGraphData({ nodes, links })
+  }, [modules, theme, mounted])
 
-  if (!mounted) return null;
+  useEffect(() => {
+    const handleResize = () => {
+      if (fgRef.current && containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect()
+        fgRef.current.width(width)
+        fgRef.current.height(height)
+      }
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  if (!mounted) return null
 
   return (
-    <div className="w-full h-[600px] relative">
+    <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-background">
       <ForceGraph3D
         ref={fgRef}
         graphData={graphData}
@@ -140,16 +155,14 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
         nodeColor="color"
         nodeVal="val"
         linkLabel={null}
-        backgroundColor={theme === "dark" ? "#000" : "#fff"}
-        linkColor={(link: any) =>
-          link.color || (theme === "dark" ? "#444" : "#ddd")
-        }
+        backgroundColor={theme === "dark" ? "rgb(9, 9, 11)" : "rgb(255, 255, 255)"}
+        linkColor={(link: any) => link.color || (theme === "dark" ? "#444" : "#ddd")}
         linkWidth={1.5}
         linkOpacity={0.6}
         nodeOpacity={0.9}
         nodeResolution={8}
         onNodeHover={(node: any) => {
-          setHoveredNode(node?.name || null);
+          setHoveredNode(node?.name || null)
         }}
         onLinkHover={() => setHoveredNode(null)}
         warmupTicks={100}
@@ -168,18 +181,18 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
         linkCurveRotation={Math.PI / 4}
         linkDirectionalArrowLength={0}
         d3Force={(d3: any) => {
-          d3.force("center").strength(1.5);
+          d3.force("center").strength(1.5)
 
-          d3.force("link").strength((link: any) => 1.0);
+          d3.force("link").strength((link: any) => 1.0)
 
-          d3.force("charge").strength(-80);
+          d3.force("charge").strength(-80)
 
           d3.force(
             "collision",
-            d3.forceCollide((node: { val: number; }) => Math.cbrt(node.val) * 5),
-          );
+            d3.forceCollide((node: { val: number }) => Math.cbrt(node.val) * 5),
+          )
 
-          d3.force("radial", d3.forceRadial(50).strength(0.2));
+          d3.force("radial", d3.forceRadial(50).strength(0.2))
         }}
       />
       <div
@@ -196,5 +209,5 @@ export default function KnowledgeGraph({ modules }: KnowledgeGraphProps) {
         {hoveredNode || ""}
       </div>
     </div>
-  );
+  )
 }

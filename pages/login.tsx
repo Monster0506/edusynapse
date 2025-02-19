@@ -12,12 +12,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Label } from "@/components/ui/label"
 import { LogIn, Loader2, MessageCircle } from "lucide-react"
 import { Callout } from "@/components/ui/callout"
+import { Eye, EyeOff } from "lucide-react"
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
   const router = useRouter()
 
   const { data: welcomeMessage, isLoading: isWelcomeLoading } = useQuery(
@@ -95,17 +101,29 @@ const Login: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+      <Label htmlFor="password">Password</Label>
+      <div className="relative">
+        <Input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="absolute right-2 top-1/2 -translate-y-1/2"
+          onClick={togglePasswordVisibility}
+        >
+          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+        </Button>
+      </div>
+    </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

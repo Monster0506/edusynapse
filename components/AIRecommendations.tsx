@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { Clock } from "lucide-react"
 import { useState } from "react"
@@ -23,6 +25,11 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({ recommendations, 
   const router = useRouter()
   const [generatingPath, setGeneratingPath] = useState<string | null>(null)
   const queryClient = useQueryClient()
+  const [expandedCards, setExpandedCards] = useState<number[]>([])
+
+  const toggleCardExpansion = (index: number) => {
+    setExpandedCards((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
+  }
 
   const getNewRecommendation = async (existingRecommendations: Recommendation[]) => {
     const token = localStorage.getItem("token")
@@ -107,10 +114,21 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({ recommendations, 
           {recommendations.map((rec, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-zinc-900 rounded-lg p-6 hover:shadow-lg transition-all duration-300 border border-zinc-200 dark:border-zinc-800 flex flex-col"
+              className="group bg-white dark:bg-zinc-900 rounded-lg p-6 hover:shadow-lg transition-all duration-300 border border-zinc-200 dark:border-zinc-800 flex flex-col relative hover:z-10"
             >
               <h3 className="font-semibold text-lg mb-3 line-clamp-2">{rec.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-4 flex-grow">{rec.description}</p>
+              <div className="text-sm text-muted-foreground mb-4 flex-grow">
+                <p className={expandedCards.includes(index) ? "" : "line-clamp-4"}>{rec.description}</p>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    toggleCardExpansion(index)
+                  }}
+                  className="text-primary hover:text-primary/90 text-sm mt-1 font-medium"
+                >
+                  {expandedCards.includes(index) ? "View less" : "View more"}
+                </button>
+              </div>
               <div className="mt-auto">
                 <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
                   <span className="bg-secondary/50 px-3 py-1 rounded-full text-xs">{rec.difficulty}</span>

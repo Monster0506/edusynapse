@@ -11,10 +11,11 @@ import GenerateLearningPathModal from "../components/GenerateLearningPathModal"
 import type { LearningPathWithItems } from "../types"
 import type { AIModule } from "@prisma/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from "@/components/ui/badge"
-import { Loader2, MoreVertical, Trash2 } from "lucide-react"
+import { Loader2, MoreVertical, Trash2 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 
 const LearningPathPage: React.FC = () => {
   const router = useRouter()
@@ -25,6 +26,9 @@ const LearningPathPage: React.FC = () => {
   const [isGenerateLearningPathOpen, setIsGenerateLearningPathOpen] = useState(false)
   const [, setDebugInfo] = useState<string>("")
   const [expandedPaths, setExpandedPaths] = useState<{ [key: string]: boolean }>({})
+  const [currentPathPage, setCurrentPathPage] = useState(1);
+  const [currentModulePage, setCurrentModulePage] = useState(1);
+  const itemsPerPage = 6;
 
   const {
     data: learningPaths,
@@ -201,60 +205,87 @@ const LearningPathPage: React.FC = () => {
 
         <h2 className="text-2xl font-semibold mb-6">Your Learning Paths</h2>
         {learningPaths && learningPaths.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {learningPaths.map((path) => (
-              <Card key={path.id} className="relative flex flex-col h-full">
-              <div className="absolute top-2 right-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleDeleteLearningPath(path.id)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <CardHeader>
-                <CardTitle>{path.title}</CardTitle>
-                <CardDescription>{path.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-between">
-                <div>
-                  <h4 className="font-semibold">Modules:</h4>
-                  <ul className="list-disc list-inside">
-                    {path.content?.modules?.slice(0, expandedPaths[path.id] ? undefined : 4).map((mod, index) => (
-                      <li key={index}>{mod.title}</li>
-                    ))}
-                  </ul>
-                </div>
-                {path.content?.modules && path.content.modules.length > 4 && (
-                  <div className="mt-auto"> {/* Ensures consistent placement at the bottom */}
-                    <Button
-                      variant="link"
-                      className="mt-2"
-                      onClick={() => {
-                        setExpandedPaths((prev) => ({ ...prev, [path.id]: !prev[path.id] }));
-                      }}
-                    >
-                      {expandedPaths[path.id] ? "Show Less" : "Show More"}
-                    </Button>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {learningPaths.slice((currentPathPage - 1) * itemsPerPage, currentPathPage * itemsPerPage).map((path) => (
+                <Card key={path.id} className="relative flex flex-col h-full">
+                  <div className="absolute top-2 right-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDeleteLearningPath(path.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Link href={`/learning-paths/${path.id}`}>
-                  <Button>View Path</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            ))}
-          </div>
+                  <CardHeader>
+                    <CardTitle>{path.title}</CardTitle>
+                    <CardDescription>{path.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-semibold">Modules:</h4>
+                      <ul className="list-disc list-inside">
+                        {path.content?.modules?.slice(0, expandedPaths[path.id] ? undefined : 4).map((mod, index) => (
+                          <li key={index}>{mod.title}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    {path.content?.modules && path.content.modules.length > 4 && (
+                      <div className="mt-auto"> {/* Ensures consistent placement at the bottom */}
+                        <Button
+                          variant="link"
+                          className="mt-2"
+                          onClick={() => {
+                            setExpandedPaths((prev) => ({ ...prev, [path.id]: !prev[path.id] }));
+                          }}
+                        >
+                          {expandedPaths[path.id] ? "Show Less" : "Show More"}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter>
+                    <Link href={`/learning-paths/${path.id}`}>
+                      <Button>View Path</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPathPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPathPage === 1}
+                  />
+                </PaginationItem>
+                {Array.from({length: Math.ceil(learningPaths.length / itemsPerPage)}, (_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink 
+                      onClick={() => setCurrentPathPage(i + 1)}
+                      isActive={currentPathPage === i + 1}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPathPage(prev => Math.min(prev + 1, Math.ceil(learningPaths.length / itemsPerPage)))}
+                    disabled={currentPathPage === Math.ceil(learningPaths.length / itemsPerPage)}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </>
         ) : (
           <p className="text-center">No learning paths available. Start by creating one!</p>
         )}
@@ -267,48 +298,75 @@ const LearningPathPage: React.FC = () => {
 
         <h2 className="text-2xl font-semibold mb-4 mt-12">Generated Modules</h2>
         {isLoadingModules ? (
-          <><div className="text-center">Loading generated modules...</div><div className="text-center text-red-500">Error: {(modulesError as Error).message}</div><div className="text-center text-red-500">Error: {modulesError.message}</div></>
+          <div className="text-center">Loading generated modules...</div>
         ) : generatedModules && generatedModules.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {generatedModules.map((module) => (
-             <Card key={module.id} className="flex flex-col h-full">
-             <CardHeader>
-               <CardTitle>{module.title}</CardTitle>
-               <CardDescription>{module.description}</CardDescription>
-             </CardHeader>
-             <CardContent className="flex-grow">
-               <div className="flex flex-wrap gap-2 mb-4">
-                 {module.tags?.map(
-                   (
-                     tag:
-                       | string
-                       | number
-                       | bigint
-                       | boolean
-                       | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-                       | Iterable<React.ReactNode>
-                       | React.ReactPortal
-                       | Promise<React.AwaitedReactNode>
-                       | null
-                       | undefined,
-                     index: React.Key | null | undefined,
-                   ) => (
-                     <Badge key={index} variant="secondary">
-                       {tag}
-                     </Badge>
-                   ),
-                 )}
-               </div>
-             </CardContent>
-             <CardFooter className="mt-auto">
-               <Link href={`/modules/${module.id}`}>
-                 <Button variant="outline">View Module</Button>
-               </Link>
-             </CardFooter>
-           </Card>
-           
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {generatedModules.slice((currentModulePage - 1) * itemsPerPage, currentModulePage * itemsPerPage).map((module) => (
+                <Card key={module.id} className="flex flex-col h-full">
+                  <CardHeader>
+                    <CardTitle>{module.title}</CardTitle>
+                    <CardDescription>{module.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {module.tags?.map(
+                        (
+                          tag:
+                            | string
+                            | number
+                            | bigint
+                            | boolean
+                            | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+                            | Iterable<React.ReactNode>
+                            | React.ReactPortal
+                            | Promise<React.AwaitedReactNode>
+                            | null
+                            | undefined,
+                          index: React.Key | null | undefined,
+                        ) => (
+                          <Badge key={index} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ),
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="mt-auto">
+                    <Link href={`/modules/${module.id}`}>
+                      <Button variant="outline">View Module</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentModulePage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentModulePage === 1}
+                  />
+                </PaginationItem>
+                {Array.from({length: Math.ceil(generatedModules.length / itemsPerPage)}, (_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink 
+                      onClick={() => setCurrentModulePage(i + 1)}
+                      isActive={currentModulePage === i + 1}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentModulePage(prev => Math.min(prev + 1, Math.ceil(generatedModules.length / itemsPerPage)))}
+                    disabled={currentModulePage === Math.ceil(generatedModules.length / itemsPerPage)}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </>
         ) : (
           <p className="text-center">No generated modules available. Start by generating one!</p>
         )}
