@@ -1,7 +1,7 @@
 export const models: { [key: string]: string } = {
-  think: "deepseek-r1:7b",
-  natural: "steve-medium",
-  fast: "steve-small",
+  think: "gemini-2.0-flash-thinking-exp-01-21",
+  natural: "gemini-2.0-flash",
+  fast: "gemini-2.0-flash",
   image: "llama3.2-vision",
 };
 

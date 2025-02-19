@@ -73,21 +73,10 @@ export async function generate_modules(
                   },
                   explanation: { 
                     type: "string",
-                    description: "Required explanation for code and math examples, optional for text examples"
+                    description: "Explanation for the example. Required for code and math examples, optional for text examples"
                   },
                 },
-                required: ["type", "content"],
-                allOf: [
-                  {
-                    if: {
-                      properties: { type: { enum: ["code", "math"] } },
-                      required: ["type"]
-                    },
-                    then: {
-                      required: ["explanation"]
-                    }
-                  }
-                ]
+                required: ["type", "content", "explanation"]
               },
             },
             quiz: {

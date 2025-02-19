@@ -75,13 +75,17 @@ If a coding_problem is not applicable, don't worry about asking a coding questio
         },
       },
       required: ["question", "type"],
-      allOf: [
+      oneOf: [
         {
-          if: {
-            properties: { type: { const: "multiple_choice" } },
+          properties: {
+            type: { enum: ["multiple_choice"] },
+            options: { type: "array" },
           },
-          then: {
-            required: ["options"],
+          required: ["options"],
+        },
+        {
+          properties: {
+            type: { enum: ["short_answer", "coding_problem"] },
           },
         },
       ],

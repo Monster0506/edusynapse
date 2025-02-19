@@ -46,9 +46,9 @@ export async function grade_practice(
     type: "object",
     properties: {
       score: {
-        type: "number",
-        enum: [0, 1, 2],
-        description: "Score from 0-2",
+        type: "string",
+        enum: ["0", "1", "2"],
+        description: "Score from 0-2 as a string",
       },
       feedback: {
         type: "string",
@@ -67,5 +67,11 @@ export async function grade_practice(
   };
 
   const response = await chatJSON(messages, schema, additionalParams);
-  return JSON.parse(response.reply);
+  const result = JSON.parse(response.reply);
+  
+  // Convert score from string to number
+  return {
+    score: parseInt(result.score),
+    feedback: result.feedback
+  };
 }

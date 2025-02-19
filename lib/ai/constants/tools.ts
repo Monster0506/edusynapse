@@ -1,5 +1,5 @@
 import { models } from "../constants/models";
-import ollama from "ollama";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ALLOWED_TYPES, MAX_FILE_SIZE } from "../constants/consts";
 import { fileStorage } from "../handlers/fileUploadHandler";
 
@@ -99,6 +99,8 @@ const calculator = (expression: CalculatorInput): CalculatorResult | string => {
   }
 };
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
 /**
  * Passes a complex problem to a more advanced LLM for deeper analysis.
  *
@@ -109,24 +111,32 @@ const calculator = (expression: CalculatorInput): CalculatorResult | string => {
  */
 const think = async (input: ThinkInput): Promise<ThinkResult> => {
   console.log("Called think", input);
-  const response = await ollama.chat({
-    messages: [
-      {
-        role: "user",
-        content: `Analyze this deeply: ${input.question}`,
-      },
-    ],
+  
+  const model = genAI.getGenerativeModel({
     model: models.think,
-    stream: false,
-    options: {
-      num_ctx: 256,
-    },
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 4096,
+    }
   });
+
+  const result = await model.generateContent({
+    contents: [
+      { role: "user", parts: [{ text: `Analyze this deeply: ${input.question}` }] }
+    ]
+  });
+
+  const response = await result.response;
+  const text = response.text();
+
   return {
-    result: response.message.content,
-    display: "[think] " + response.message.content,
+    result: text,
+    display: "[think] " + text,
   };
 };
+
 async function fileRead(input: FileId): Promise<FileReadResult> {
   console.log('fileread tool called with input:', input);
 
@@ -203,23 +213,6 @@ export const tools: Tool[] = [
   {
     type: "function",
     function: {
-      name: "search",
-      description: "Performs a search operation",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The search query",
-          },
-        },
-        required: ["query"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
       name: "calculator",
       description: "Evaluates mathematical expressions",
       parameters: {
@@ -257,7 +250,7 @@ export const tools: Tool[] = [
  * Registry of available tools for the LLM to use.
  */
 export const toolRegistry: Record<string, ToolFunction> = {
-  search,
+  // search,
   calculator,
   think,
   fileread: fileRead,
