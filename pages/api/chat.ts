@@ -1,37 +1,40 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { generateResponse, type ModelType } from "@/lib/ollama";
+import { NextApiRequest, NextApiResponse } from "next";
+import { chat } from "@/lib/ai/services/ollama";
+import { Message } from "@/lib/ai/interfaces/interfaces";
 import { models } from "@/lib/ai/constants/models";
-import { chat } from "@/lib/ai/defaults/chat";
-import { tools } from "@/lib/ai/constants/tools";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { message, modelType } = req.body;
-  console.log('[Chat API] Received request:', { message, modelType })
-
   try {
-    const aiResponse = await chat(message, { 
-      model: models[modelType],
-      tools: tools
+    const { message, modelType = "natural" } = req.body;
+
+    // Convert the message to our Message format
+    const messages: Message[] = [
+      {
+        role: "user",
+        content: message,
+      },
+    ];
+
+    // Enable tools only for chat popup
+    const referer = req.headers.referer || "";
+    const enableTools = referer.includes("/chat") || referer.includes("ChatPopup");
+
+    // Call chat with appropriate model and tools enabled
+    const response = await chat(messages, {
+      model: models[modelType] || models.natural,
+      enableTools: true,
     });
-    res.status(200).json({
-      message: aiResponse.message,
-      messages: aiResponse.messages,
-      tools: aiResponse.tools
-    });
+
+    res.status(200).json(response);
   } catch (error) {
     console.error("Chat API error:", error);
-    res
-      .status(500)
-      .json({ 
-        message: "An error occurred while processing your request.",
-        error: error instanceof Error ? error.message : String(error)
-      });
+    res.status(500).json({ error: "Error processing chat request" });
   }
 }

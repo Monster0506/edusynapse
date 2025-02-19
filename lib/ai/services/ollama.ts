@@ -19,6 +19,16 @@ interface ToolCall {
   };
 }
 
+interface AdditionalParams {
+  options?: {
+    temperature?: number;
+    topK?: number;
+    topP?: number;
+    maxOutputTokens?: number;
+  };
+  enableTools?: boolean;
+}
+
 /**
  * Orchestrates a conversation with an LLM, automatically handling tool execution
  * and multi-step interactions. Manages message history and tool recursion.
@@ -48,6 +58,14 @@ export const chat = async (
     parts: [{ text: msg.content }]
   }));
 
+  // Ensure we have at least one message
+  if (conversationMessages.length === 0) {
+    conversationMessages.push({
+      role: "user",
+      parts: [{ text: "Hello" }]
+    });
+  }
+
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     ...additionalParams,
@@ -56,12 +74,13 @@ export const chat = async (
     } : undefined
   });
 
-  // Convert our tools array to Gemini's function declarations format
-  const functionDeclarations = tools.map(tool => ({
+  // Only include tools configuration if enabled
+  const enableTools = additionalParams.enableTools ?? false;
+  const functionDeclarations = enableTools ? tools.map(tool => ({
     name: tool.function.name,
     description: tool.function.description,
     parameters: tool.function.parameters
-  }));
+  })) : [];
 
   // Configure function calling
   const generationConfig = {
@@ -172,66 +191,47 @@ export const chatJSON = async (
   // Stage 2: Format with JSON schema
   const formatMessage: Message = {
     role: "user",
-    content: `Convert this analysis to JSON using the schema:\n${JSON.stringify(
-      jsonSchema,
-    )}\n\nAnalysis: ${analysisResponse.reply}`,
+    content: `Respond with ONLY the raw JSON - no explanation, no code blocks, no backticks. The JSON must match this schema exactly:
+
+${JSON.stringify(jsonSchema, null, 2)}
+
+Here's the content to convert to JSON:
+${analysisResponse.reply}
+
+Remember: Your response must start with { or [ and contain ONLY valid JSON.`,
   };
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash", // Use same model for JSON formatting since we don't have a smaller one yet
+    model: "gemini-2.0-flash",
     generationConfig: {
-      temperature: 0.1, // Lower temperature for more precise JSON formatting
-      responseMimeType: "application/json",
+      temperature: 0.1,
     },
-  });
-
-  // Convert the schema to Gemini's format
-  const functionDeclarations = [{
-    name: "format_json",
-    description: "Format the analysis as JSON according to the schema",
-    parameters: {
-      type: "object",
-      ...jsonSchema,
+    ...additionalParams,
+    systemInstruction: {
+      parts: [{ text: "You are a strict JSON formatter. You must output ONLY valid JSON that matches the schema exactly - no markdown, no code blocks, no backticks, no explanation. Your entire response must be parseable JSON." }]
     }
-  }];
+  });
 
   const result = await model.generateContent({
     contents: [{ role: "user", parts: [{ text: formatMessage.content }] }],
     generationConfig: {
       temperature: 0.1,
-    },
-    tools: {
-      function_declarations: functionDeclarations
-    },
-    tool_config: {
-      function_calling_config: {
-        mode: "FORCE",
-        allowed_function_names: ["format_json"]
-      }
     }
   });
 
   const response = await result.response;
-  let jsonResponse;
+  let text = response.text();
 
-  // Handle function call response
-  if (response.candidates?.[0]?.functionCalls) {
-    const call = response.candidates[0].functionCalls[0];
-    try {
-      jsonResponse = JSON.parse(call.args);
-    } catch (error) {
-      console.error("Failed to parse JSON response:", error);
-      throw new Error("Generated response is not valid JSON");
-    }
-  } else {
-    // Fallback to parsing text response if no function call
-    try {
-      const text = response.text();
-      jsonResponse = JSON.parse(text);
-    } catch (error) {
-      console.error("Failed to parse JSON response:", error);
-      throw new Error("Generated response is not valid JSON");
-    }
+  // Clean up any markdown or code block formatting
+  text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').replace(/`/g, '').trim();
+
+  let jsonResponse;
+  try {
+    jsonResponse = JSON.parse(text);
+  } catch (error) {
+    console.error("Failed to parse JSON response:", error);
+    console.error("Raw text:", text);
+    throw new Error("Generated response is not valid JSON");
   }
 
   messages.push({
@@ -242,6 +242,6 @@ export const chatJSON = async (
   return {
     reply: JSON.stringify(jsonResponse),
     messages: messages,
-    analysis: analysisResponse.reply, // Include the original analysis
+    analysis: analysisResponse.reply,
   };
 };

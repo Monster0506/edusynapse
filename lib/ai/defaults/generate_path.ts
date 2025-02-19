@@ -6,10 +6,18 @@ export async function generate_path(topic: string): Promise<any> {
   const messages: Message[] = [
     {
       role: "user",
-      content: `Generate a precice learning path for the topic ${topic}. It should have at least 6 modules, but no more than 20. Try to break it down into smaller sub-topics, each progressive. Don't aim for 20, just consider it a maximum. Aim to be around 10-12`,
+      content: `Generate a learning path for: ${topic}`,
     },
   ];
-  const additionalParams = { model: models.fast, tools: [] };
+
+  const additionalParams = { 
+    model: models.fast, 
+    options: {
+      temperature: 0.7,
+      maxOutputTokens: 2048,
+    },
+    enableTools: false // Explicitly disable tools
+  };
 
   const schema = {
     type: "array",

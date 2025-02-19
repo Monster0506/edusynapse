@@ -63,6 +63,7 @@ export async function grade_practice(
     tools: [],
     options: {
       temperature: 0.3, // Lower temperature for more consistent grading
+      enableTools: false // Explicitly disable tools
     },
   };
 
